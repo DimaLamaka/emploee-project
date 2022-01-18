@@ -1,36 +1,39 @@
 package by.lamaka.application.service.impl;
 
 
+import by.lamaka.application.entity.Employee;
 import by.lamaka.application.service.FileParserService;
+import by.lamaka.application.service.mappers.MapperService;
+import by.lamaka.application.service.mappers.impl.FileMapper;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class FileParserServiceImpl implements FileParserService {
+    MapperService<String[]> mapperService;
 
+    public FileParserServiceImpl() {
+        mapperService = new FileMapper();
+    }
 
     @Override
-    public List<Map<String, String>> getListEmployeeParamsFromFile(String path) throws IOException {
-        List<Map<String, String>> employeesParams = new ArrayList<>();
+    public List<Employee> getListEmployeeFromFile(String path) throws IOException, SQLException {
+        List<Employee> employees = new ArrayList<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path))) {
             while (bufferedReader.ready()) {
                 String nextLine = bufferedReader.readLine();
                 String[] split = nextLine.split("\\s*;\\s*");
-
-                Map<String, String> empParams = new HashMap<>();
-                empParams.put("id", split[0]);
-                empParams.put("name", split[1]);
-                empParams.put("task", split[2]);
-                empParams.put("is work", split[3]);
-
-                employeesParams.add(empParams);
+                Employee employee = mapperService.map(split);
+                employees.add(employee);
             }
         }
-        return employeesParams;
+        return employees;
     }
 }

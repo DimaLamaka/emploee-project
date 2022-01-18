@@ -7,5 +7,5 @@ import java.util.Map;
 
 public interface ValidateService {
     boolean validateId(String id) throws ValidateException;
-    boolean validateEmployee(Map<String,String> params) throws ValidateException;
+    boolean validateUserInputEmployee(Map<String,String> params) throws ValidateException;
 }

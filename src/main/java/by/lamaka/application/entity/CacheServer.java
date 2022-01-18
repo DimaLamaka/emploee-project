@@ -1,19 +1,21 @@
 package by.lamaka.application.entity;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CacheServer {
-    private static Map<Long, Employee> cache;
+    @Getter
+    static Map<Long, Employee> cache;
 
     static {
         cache = new HashMap<>();
     }
 
-    public static Map<Long, Employee> getCache() {
-        return cache;
-    }
 }

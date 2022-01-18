@@ -1,10 +1,12 @@
 package by.lamaka.application.runner;
 
-import by.lamaka.application.service.ServiceProvider;
 
+import by.lamaka.application.service.ApplicationService;
+import by.lamaka.application.service.impl.ApplicationServiceImpl;
 
 public class Runner {
     public static void main(String[] args) {
-        ServiceProvider.getInstance().getApplicationService().startApplication();
+        ApplicationService applicationService = new ApplicationServiceImpl();
+        applicationService.startApplication();
     }
 }
