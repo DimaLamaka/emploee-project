@@ -1,27 +1,15 @@
 package by.lamaka.application.config;
 
-import com.mysql.cj.jdbc.MysqlDataSource;
-import lombok.Data;
 
-@Data
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 public class ConnectionDB {
-    private static MysqlDataSource dataSource = new MysqlDataSource();
-
-    static {
-        dataSource.setUser("root");
-        dataSource.setPassword("root");
-        dataSource.setServerName("localhost");
-        dataSource.setDatabaseName("employee");
-    }
-
-    private ConnectionDB() {
-    }
-
-    public static MysqlDataSource getDataSource() {
-        return dataSource;
-    }
-
-    public static void setDataSource(MysqlDataSource dataSource) {
-        ConnectionDB.dataSource = dataSource;
+    public static Connection getConnection() throws SQLException {
+        String url = "jdbc:mysql://localhost:3306/employee";
+        String user = "root";
+        String password = "root";
+        return DriverManager.getConnection(url,user,password);
     }
 }

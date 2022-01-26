@@ -1,10 +1,13 @@
 package by.lamaka.application.service;
 
+import by.lamaka.application.entity.Employee;
+import by.lamaka.application.exceptions.ValidateException;
+
 import java.io.IOException;
-import java.util.Map;
+import java.sql.SQLException;
 
 public interface UserService {
     String getUserInput(String message) throws IOException;
-    Map<String,String> getEmployeeParams() throws IOException, InterruptedException;
+    Employee getEmployeeFromUserInput() throws IOException, ValidateException, SQLException;
     void closeReader() throws IOException;
 }

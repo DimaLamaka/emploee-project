@@ -1,61 +1,75 @@
 package by.lamaka.application.service.impl;
 
 
+import by.lamaka.application.entity.CacheServer;
 import by.lamaka.application.entity.Employee;
 import by.lamaka.application.exceptions.ValidateException;
-import by.lamaka.application.service.ApplicationService;
-import by.lamaka.application.service.ServiceProvider;
+import by.lamaka.application.service.*;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class ApplicationServiceImpl implements ApplicationService {
     private static final String FILE_PATH = "src/main/resources/Employee.csv";
     private static final String END_APP = "EXIT";
+    EmployeeInfoService employeeInfoService;
+    FileParserService fileParserService;
+    EmployeeService employeeService;
+    UserService userService;
+    ValidateService validateService;
+
+    public ApplicationServiceImpl() {
+        fileParserService = new FileParserServiceImpl();
+        employeeService = new EmployeeCacheService(new EmployeeDBService());
+        userService = new UserServiceImpl();
+        validateService = new ValidateServiceImpl();
+        employeeInfoService = new EmployeeInfoServiceImpl(employeeService);
+    }
 
     @Override
     public void startApplication() {
-        Thread thread = new Thread(ServiceProvider.getInstance().getInfoService());
+        Thread thread = new Thread(employeeInfoService);
         thread.start();
-        ServiceProvider SERVICE_PROVIDER = ServiceProvider.getInstance();
         System.out.println("Start application...");
         try {
-            List<Map<String, String>> listEmpParams = SERVICE_PROVIDER.getFileParserService().getListEmployeeParamsFromFile(FILE_PATH);
-            SERVICE_PROVIDER.getEmployeeService().addListEmployee(listEmpParams);
+            employeeService.getListEmployee().forEach(emp -> CacheServer.getCache().put(emp.getId(), emp));
+            List<Employee> employees = fileParserService.getListEmployeeFromFile(FILE_PATH);
+            employeeService.addListEmployee(employees);
             System.out.println("Employees add to DB from file...");
         } catch (SQLException | IOException | ValidateException e) {
             System.err.println(e);
         }
-        Map<String, String> paramEmployee = null;
         while (true) {
             try {
-                String request = SERVICE_PROVIDER.getUserService().getUserInput("Enter \"EXIT\" or Id employee..");
+                String request = userService.getUserInput("Enter \"EXIT\" or Id employee..");
                 if (request.equals(END_APP)) {
-                    SERVICE_PROVIDER.getUserService().closeReader();
+                    userService.closeReader();
                     return;
                 }
-                Employee employee = SERVICE_PROVIDER.getEmployeeService().getEmployeeById(request);
+                validateService.validateId(request);
+                Employee employee = employeeService.getEmployeeById(request);
+
                 if (employee != null) {
                     System.out.println(employee);
                     System.out.println("Update employee: ");
-                    paramEmployee = SERVICE_PROVIDER.getUserService().getEmployeeParams();
-                    paramEmployee.put("id", request);
-                    SERVICE_PROVIDER.getEmployeeService().updateEmployee(paramEmployee);
+                    employee = userService.getEmployeeFromUserInput();
+                    employee.setId(Integer.parseInt(request));
+                    employeeService.updateEmployee(employee);
                     System.out.println("Employee was updated");
                 } else {
                     System.out.println("Add new employee: ");
-                    paramEmployee = SERVICE_PROVIDER.getUserService().getEmployeeParams();
-                    paramEmployee.put("id", request);
-                    SERVICE_PROVIDER.getEmployeeService().addEmployee(paramEmployee);
+                    employee = userService.getEmployeeFromUserInput();
+                    employeeService.addEmployee(employee);
                     System.out.println("Employee was added");
                 }
 
-            } catch (IOException | SQLException | ValidateException | InterruptedException e) {
+            } catch (IOException | SQLException | ValidateException e) {
                 System.err.println(e.getMessage());
             }
         }
-
     }
 }

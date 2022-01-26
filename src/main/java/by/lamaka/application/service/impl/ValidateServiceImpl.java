@@ -15,9 +15,7 @@ public class ValidateServiceImpl implements ValidateService {
     }
 
     @Override
-    public boolean validateEmployee(Map<String, String> params) throws ValidateException {
-        String id = params.get("id");
-        validateId(id);
+    public boolean validateUserInputEmployee(Map<String, String> params) throws ValidateException {
         String name = params.get("name");
         if (name == null || "".equals(name)) {
             throw new ValidateException("Name can't be empty or null");
